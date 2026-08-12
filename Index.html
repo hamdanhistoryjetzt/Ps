@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>🔒 Private File Database</title>
+    <style>
+        /* ─── Reset & Base ─── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0b0d10;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #e8edf5;
+        }
+
+        /* ─── Glass Card ─── */
+        .glass {
+            background: rgba(22, 28, 36, 0.85);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 32px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 820px;
+            transition: all 0.25s;
+        }
+
+        /* ─── Typography ─── */
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        h1 small {
+            font-size: 15px;
+            font-weight: 400;
+            color: #8895aa;
+            margin-left: auto;
+        }
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #c8d0dc;
+            margin-bottom: 16px;
+            letter-spacing: -0.2px;
+        }
+        .sub {
+            color: #8895aa;
+            font-size: 14px;
+            margin-top: -4px;
+            margin-bottom: 24px;
+        }
+
+        /* ─── Login Screen ─── */
+        #loginScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px 0;
+        }
+        #loginScreen .lock-icon {
+            font-size: 54px;
+            margin-bottom: 8px;
+        }
+        #loginScreen h1 {
+            font-size: 30px;
+            margin-bottom: 6px;
+        }
+        #loginScreen .sub {
+            margin-bottom: 28px;
+        }
+        .login-form {
+            width: 100%;
+            max-width: 380px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .login-form .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            text-align: left;
+        }
+        .login-form label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #a8b5c8;
+            letter-spacing: 0.3px;
+        }
+        .login-form input[type="password"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 14px 18px;
+            font-size: 16px;
+            color: #e8edf5;
+            outline: none;
+            transition: 0.2s;
+        }
+        .login-form input[type="password"]:focus {
+            border-color: #6c8cff;
+            box-shadow: 0 0 0 3px rgba(108, 140, 255, 0.15);
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .login-form input[type="password"]::placeholder {
+            color: #5a687c;
+        }
+
+        /* ─── Buttons ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            background: rgba(255, 255, 255, 0.06);
+            color: #e8edf5;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+        .btn-primary {
+            background: #6c8cff;
+            color: #fff;
+            border-color: #6c8cff;
+        }
+        .btn-primary:hover {
+            background: #5a7ae6;
+            border-color: #5a7ae6;
+            box-shadow: 0 8px 28px rgba(108, 140, 255, 0.25);
+        }
+        .btn-danger {
+            background: rgba(255, 90, 90, 0.15);
+            color: #ff6b6b;
+            border-color: rgba(255, 90, 90, 0.15);
+        }
+        .btn-danger:hover {
+            background: rgba(255, 90, 90, 0.25);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 13px;
+            border-radius: 10px;
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        /* ─── Dashboard ─── */
+        #dashboard {
+            display: none;
+            flex-direction: column;
+            gap: 28px;
+        }
+        .dash-header {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .dash-header h1 {
+            flex: 1;
+            min-width: 160px;
+        }
+        .dash-header .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* ─── Upload Area ─── */
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 44px 20px;
+            text-align: center;
+            transition: 0.25s;
+            cursor: pointer;
+            background: rgba(255, 255, 255, 0.02);
+            position: relative;
+        }
+        .upload-area:hover,
+        .upload-area.dragover {
+            border-color: #6c8cff;
+            background: rgba(108, 140, 255, 0.04);
+        }
+        .upload-area .icon {
+            font-size: 42px;
+            margin-bottom: 6px;
+        }
+        .upload-area p {
+            color: #8895aa;
+            font-size: 15px;
+        }
+        .upload-area .highlight {
+            color: #6c8cff;
+            font-weight: 600;
+        }
+        .upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .upload-progress {
+            margin-top: 16px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 4px;
+            overflow: hidden;
+            display: none;
+        }
+        .upload-progress .bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6c8cff, #a78bfa);
+            border-radius: 4px;
+            transition: width 0.15s;
+        }
+
+        /* ─── File List ─── */
+        .file-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .file-list-header .count {
+            font-size: 14px;
+            color: #8895aa;
+        }
+        .file-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 4px;
+            max-height: 420px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .file-grid::-webkit-scrollbar {
+            width: 4px;
+        }
+        .file-grid::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 4px;
+        }
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: 0.15s;
+        }
+        .file-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        .file-item .file-icon {
+            font-size: 28px;
+            flex-shrink: 0;
+            width: 40px;
+            text-align: center;
+        }
+        .file-item .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .file-item .file-name {
+            font-weight: 500;
+            font-size: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .file-item .file-meta {
+            font-size: 12px;
+            color: #8895aa;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .file-item .file-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .file-item .file-actions .btn {
+            padding: 6px 14px;
+            font-size: 13px;
+            border-radius: 10px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8895aa;
+        }
+        .empty-state .big-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+
+        /* ─── Toast / Alert ─── */
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: rgba(22, 28, 36, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 14px 28px;
+            border-radius: 16px;
+            font-size: 14px;
+            color: #e8edf5;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            transition: 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            max-width: 90vw;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+        .toast.error {
+            border-color: rgba(255, 90, 90, 0.25);
+        }
+        .toast.success {
+            border-color: rgba(90, 220, 150, 0.2);
+        }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 600px) {
+            .glass {
+                padding: 24px 18px;
+                border-radius: 24px;
+            }
+            h1 {
+                font-size: 22px;
+            }
+            .dash-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .dash-header .actions {
+                justify-content: stretch;
+            }
+            .dash-header .actions .btn {
+                flex: 1;
+                justify-content: center;
+            }
+            .file-item {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            .file-item .file-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+            .upload-area {
+                padding: 28px 16px;
+            }
+            .login-form {
+                max-width: 100%;
+            }
+        }
+        @media (max-width: 400px) {
+            .glass {
+                padding: 16px 12px;
+            }
+            .file-item .file-actions .btn {
+                padding: 4px 10px;
+                font-size: 12px;
+            }
+        }
+
+        /* ─── Hidden helper ─── */
+        .hidden {
+            display: none !important;
+        }
+
+        /* ─── Change password modal inline ─── */
+        .inline-modal {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-top: 8px;
+            display: none;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .inline-modal.open {
+            display: flex;
+        }
+        .inline-modal .row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .inline-modal input[type="password"] {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-size: 14px;
+            color: #e8edf5;
+            outline: none;
+            flex: 1;
+            min-width: 120px;
+            transition: 0.2s;
+        }
+        .inline-modal input[type="password"]:focus {
+            border-color: #6c8cff;
+            box-shadow: 0 0 0 3px rgba(108, 140, 255, 0.12);
+        }
+        .inline-modal input[type="password"]::placeholder {
+            color: #5a687c;
+        }
+        .inline-modal .btn {
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="glass" id="app">
+
+        <!-- ─── LOGIN SCREEN ─── -->
+        <div id="loginScreen">
+            <div class="lock-icon">🔐</div>
+            <h1>Private Database</h1>
+            <p class="sub">Enter your password to access your files</p>
+            <div class="login-form">
+                <div class="input-group">
+                    <label for="loginPass">Password</label>
+                    <input type="password" id="loginPass" placeholder="Enter password" autofocus />
+                </div>
+                <button class="btn btn-primary btn-block" id="loginBtn">Unlock &nbsp;→</button>
+                <button class="btn btn-outline btn-block btn-sm" id="showSetupBtn" style="margin-top:4px;">
+                    ⚙️ First time? Set up password
+                </button>
+                <div id="setupArea" class="hidden" style="margin-top:8px; display:flex; flex-direction:column; gap:10px;">
+                    <input type="password" id="newPassInput" placeholder="New password" />
+                    <input type="password" id="confirmPassInput" placeholder="Confirm password" />
+                    <button class="btn btn-primary btn-block btn-sm" id="setupBtn">Set Password</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── DASHBOARD ─── -->
+        <div id="dashboard">
+            <div class="dash-header">
+                <h1>📁 My Database <small id="fileCount">0 files</small></h1>
+                <div class="actions">
+                    <button class="btn btn-outline btn-sm" id="changePassToggleBtn">🔑 Change password</button>
+                    <button class="btn btn-outline btn-sm" id="logoutBtn">🚪 Logout</button>
+                </div>
+            </div>
+
+            <!-- Change Password inline -->
+            <div class="inline-modal" id="changePassModal">
+                <div class="row">
+                    <input type="password" id="oldPassInput" placeholder="Current password" />
+                    <input type="password" id="newPassInput2" placeholder="New password" />
+                    <input type="password" id="confirmPassInput2" placeholder="Confirm new" />
+                    <button class="btn btn-primary btn-sm" id="changePassBtn">Update</button>
+                    <button class="btn btn-outline btn-sm" id="cancelChangeBtn">Cancel</button>
+                </div>
+            </div>
+
+            <!-- Upload -->
+            <div>
+                <h2>⬆️ Upload files</h2>
+                <div class="upload-area" id="uploadArea">
+                    <div class="icon">📤</div>
+                    <p>Drag &amp; drop files here, or <span class="highlight">click to browse</span></p>
+                    <p style="font-size:12px; margin-top:6px; color:#5a687c;">Max ~500MB per file (browser limit)</p>
+                    <input type="file" id="fileInput" multiple />
+                    <div class="upload-progress" id="uploadProgress"><div class="bar" id="progressBar"></div></div>
+                </div>
+            </div>
+
+            <!-- File list -->
+            <div>
+                <div class="file-list-header">
+                    <h2>📄 Your files</h2>
+                    <span class="count" id="fileCountLabel">0 files</span>
+                </div>
+                <div class="file-grid" id="fileGrid">
+                    <div class="empty-state">
+                        <div class="big-icon">📭</div>
+                        <p>No files uploaded yet.</p>
+                        <p style="font-size:13px; margin-top:4px;">Drop a file above to get started.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── TOAST ─── -->
+    <div class="toast" id="toast"><span id="toastIcon">✅</span> <span id="toastMsg">Message</span></div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── DOM refs ───
+            const $ = id => document.getElementById(id);
+            const loginScreen = $('loginScreen');
+            const dashboard = $('dashboard');
+            const loginPass = $('loginPass');
+            const loginBtn = $('loginBtn');
+            const showSetupBtn = $('showSetupBtn');
+            const setupArea = $('setupArea');
+            const newPassInput = $('newPassInput');
+            const confirmPassInput = $('confirmPassInput');
+            const setupBtn = $('setupBtn');
+            const logoutBtn = $('logoutBtn');
+            const fileInput = $('fileInput');
+            const uploadArea = $('uploadArea');
+            const fileGrid = $('fileGrid');
+            const fileCountLabel = $('fileCountLabel');
+            const fileCount = $('fileCount');
+            const progressBar = $('progressBar');
+            const uploadProgress = $('uploadProgress');
+            const changePassToggleBtn = $('changePassToggleBtn');
+            const changePassModal = $('changePassModal');
+            const oldPassInput = $('oldPassInput');
+            const newPassInput2 = $('newPassInput2');
+            const confirmPassInput2 = $('confirmPassInput2');
+            const changePassBtn = $('changePassBtn');
+            const cancelChangeBtn = $('cancelChangeBtn');
+            const toast = $('toast');
+            const toastMsg = $('toastMsg');
+            const toastIcon = $('toastIcon');
+
+            // ─── State ───
+            const DB_NAME = 'PrivateFileDB';
+            const STORE_NAME = 'files';
+            const PASS_KEY = 'db_password';
+            let db = null;
+            let isLoggedIn = false;
+
+            // ─── Toast ───
+            let toastTimer = null;
+
+            function showToast(msg, type = 'success') {
+                toastIcon.textContent = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+                toastMsg.textContent = msg;
+                toast.className = 'toast ' + type;
+                // force reflow
+                void toast.offsetWidth;
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+            }
+
+            // ─── Password helpers ───
+            function getStoredPassword() {
+                return localStorage.getItem(PASS_KEY) || null;
+            }
+
+            function setStoredPassword(pwd) {
+                localStorage.setItem(PASS_KEY, pwd);
+            }
+
+            function hasPassword() {
+                return getStoredPassword() !== null;
+            }
+
+            // ─── IndexedDB ───
+            function openDB() {
+                return new Promise((resolve, reject) => {
+                    const req = indexedDB.open(DB_NAME, 1);
+                    req.onupgradeneeded = (e) => {
+                        const d = e.target.result;
+                        if (!d.objectStoreNames.contains(STORE_NAME)) {
+                            d.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        }
+                    };
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            async function initDB() {
+                if (!db) db = await openDB();
+                return db;
+            }
+
+            function addFileToDB(fileData) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const req = store.add(fileData);
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            function getAllFilesFromDB() {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const req = store.getAll();
+                    req.onsuccess = () => resolve(req.result);
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            function deleteFileFromDB(id) {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(STORE_NAME, 'readwrite');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const req = store.delete(id);
+                    req.onsuccess = () => resolve();
+                    req.onerror = () => reject(req.error);
+                });
+            }
+
+            // ─── File size formatting ───
+            function formatSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
+                return (bytes / 1073741824).toFixed(1) + ' GB';
+            }
+
+            function formatDate(ts) {
+                const d = new Date(ts);
+                return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+
+            function getFileIcon(mime) {
+                if (!mime) return '📄';
+                if (mime.startsWith('image/')) return '🖼️';
+                if (mime.startsWith('video/')) return '🎬';
+                if (mime.startsWith('audio/')) return '🎵';
+                if (mime.includes('pdf')) return '📕';
+                if (mime.includes('zip') || mime.includes('rar') || mime.includes('7z')) return '📦';
+                if (mime.includes('text')) return '📝';
+                if (mime.includes('spreadsheet') || mime.includes('excel') || mime.includes('csv')) return '📊';
+                if (mime.includes('presentation') || mime.includes('powerpoint')) return '📽️';
+                if (mime.includes('word') || mime.includes('document')) return '📘';
+                return '📄';
+            }
+
+            // ─── Render file list ───
+            async function renderFiles() {
+                if (!db) await initDB();
+                const files = await getAllFilesFromDB();
+                const count = files.length;
+                fileCountLabel.textContent = count + ' file' + (count !== 1 ? 's' : '');
+                fileCount.textContent = count + ' file' + (count !== 1 ? 's' : '');
+
+                if (count === 0) {
+                    fileGrid.innerHTML = `
+                        <div class="empty-state">
+                            <div class="big-icon">📭</div>
+                            <p>No files uploaded yet.</p>
+                            <p style="font-size:13px; margin-top:4px;">Drop a file above to get started.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const f of files) {
+                    const icon = getFileIcon(f.type);
+                    html += `
+                        <div class="file-item" data-id="${f.id}">
+                            <div class="file-icon">${icon}</div>
+                            <div class="file-info">
+                                <div class="file-name">${escapeHtml(f.name)}</div>
+                                <div class="file-meta">
+                                    <span>${formatSize(f.size)}</span>
+                                    <span>•</span>
+                                    <span>${formatDate(f.uploadDate)}</span>
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <button class="btn btn-primary btn-sm download-btn" data-id="${f.id}">⬇️ Download</button>
+                                <button class="btn btn-danger btn-sm delete-btn" data-id="${f.id}">🗑️</button>
+                            </div>
+                        </div>
+                    `;
+                }
+                fileGrid.innerHTML = html;
+
+                // Attach events
+                fileGrid.querySelectorAll('.download-btn').forEach(btn => {
+                    btn.addEventListener('click', () => handleDownload(parseInt(btn.dataset.id)));
+                });
+                fileGrid.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', () => handleDelete(parseInt(btn.dataset.id)));
+                });
+            }
+
+            // Simple escape
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // ─── Download ───
+            async function handleDownload(id) {
+                try {
+                    if (!db) await initDB();
+                    const transaction = db.transaction(STORE_NAME, 'readonly');
+                    const store = transaction.objectStore(STORE_NAME);
+                    const req = store.get(id);
+                    const file = await new Promise((resolve, reject) => {
+                        req.onsuccess = () => resolve(req.result);
+                        req.onerror = () => reject(req.error);
+                    });
+                    if (!file) {
+                        showToast('File not found.', 'error');
+                        return;
+                    }
+                    // Reconstruct blob
+                    const blob = new Blob([file.data], { type: file.type || 'application/octet-stream' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = file.name;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 5000);
+                    showToast(`Downloaded: ${file.name}`, 'success');
+                } catch (err) {
+                    console.error(err);
+                    showToast('Download failed.', 'error');
+                }
+            }
+
+            // ─── Delete ───
+            async function handleDelete(id) {
+                if (!confirm('Delete this file permanently?')) return;
+                try {
+                    await deleteFileFromDB(id);
+                    showToast('File deleted.', 'success');
+                    renderFiles();
+                } catch (err) {
+                    console.error(err);
+                    showToast('Delete failed.', 'error');
+                }
+            }
+
+            // ─── Upload ───
+            async function handleUpload(files) {
+                if (!files || files.length === 0) return;
+                if (!db) await initDB();
+
+                let uploaded = 0;
+                const total = files.length;
+
+                for (const file of files) {
+                    try {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const fileData = {
+                            name: file.name,
+                            size: file.size,
+                            type: file.type || 'application/octet-stream',
+                            data: arrayBuffer,
+                            uploadDate: Date.now()
+                        };
+                        await addFileToDB(fileData);
+                        uploaded++;
+                        const pct = Math.round((uploaded / total) * 100);
+                        progressBar.style.width = pct + '%';
+                    } catch (err) {
+                        console.error('Upload error for', file.name, err);
+                        showToast(`Failed to upload: ${file.name}`, 'error');
+                    }
+                }
+
+                progressBar.style.width = '0%';
+                uploadProgress.style.display = 'none';
+                if (uploaded > 0) {
+                    showToast(`Uploaded ${uploaded} file${uploaded > 1 ? 's' : ''}.`, 'success');
+                    renderFiles();
+                }
+                fileInput.value = '';
+            }
+
+            // ─── Login logic ───
+            function attemptLogin(password) {
+                const stored = getStoredPassword();
+                if (!stored) {
+                    showToast('No password set. Please set one first.', 'error');
+                    return false;
+                }
+                if (password === stored) {
+                    isLoggedIn = true;
+                    loginScreen.style.display = 'none';
+                    dashboard.style.display = 'flex';
+                    initDB().then(() => renderFiles()).catch(err => {
+                        console.error(err);
+                        showToast('Database error.', 'error');
+                    });
+                    loginPass.value = '';
+                    showToast('Unlocked! 🔓', 'success');
+                    return true;
+                } else {
+                    showToast('Incorrect password.', 'error');
+                    loginPass.value = '';
+                    loginPass.focus();
+                    return false;
+                }
+            }
+
+            function logout() {
+                isLoggedIn = false;
+                dashboard.style.display = 'none';
+                loginScreen.style.display = 'flex';
+                loginPass.value = '';
+                loginPass.focus();
+                // close change password modal
+                changePassModal.classList.remove('open');
+                showToast('Logged out.', 'success');
+            }
+
+            // ─── Setup password ───
+            function setupPassword(newPwd, confirmPwd) {
+                if (newPwd.length < 4) {
+                    showToast('Password must be at least 4 characters.', 'error');
+                    return;
+                }
+                if (newPwd !== confirmPwd) {
+                    showToast('Passwords do not match.', 'error');
+                    return;
+                }
+                if (hasPassword()) {
+                    showToast('A password already exists. Use "Change password" instead.', 'error');
+                    return;
+                }
+                setStoredPassword(newPwd);
+                setupArea.classList.add('hidden');
+                showSetupBtn.textContent = '🔑 Password set';
+                showToast('Password set successfully! You can now log in.', 'success');
+                newPassInput.value = '';
+                confirmPassInput.value = '';
+                loginPass.focus();
+            }
+
+            // ─── Change password ───
+            function changePassword(oldPwd, newPwd, confirmPwd) {
+                const stored = getStoredPassword();
+                if (!stored) {
+                    showToast('No password set. Use "Set up password" first.', 'error');
+                    return;
+                }
+                if (oldPwd !== stored) {
+                    showToast('Current password is incorrect.', 'error');
+                    return;
+                }
+                if (newPwd.length < 4) {
+                    showToast('New password must be at least 4 characters.', 'error');
+                    return;
+                }
+                if (newPwd !== confirmPwd) {
+                    showToast('Passwords do not match.', 'error');
+                    return;
+                }
+                setStoredPassword(newPwd);
+                showToast('Password changed successfully!', 'success');
+                oldPassInput.value = '';
+                newPassInput2.value = '';
+                confirmPassInput2.value = '';
+                changePassModal.classList.remove('open');
+            }
+
+            // ─── Event listeners ───
+
+            // Login
+            loginBtn.addEventListener('click', () => {
+                const pwd = loginPass.value;
+                if (pwd) attemptLogin(pwd);
+                else showToast('Please enter a password.', 'error');
+            });
+            loginPass.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') loginBtn.click();
+            });
+
+            // Show setup
+            showSetupBtn.addEventListener('click', () => {
+                if (hasPassword()) {
+                    showToast('A password already exists. Use "Change password" in the dashboard.', 'error');
+                    return;
+                }
+                setupArea.classList.toggle('hidden');
+                if (!setupArea.classList.contains('hidden')) {
+                    newPassInput.focus();
+                }
+            });
+
+            // Setup
+            setupBtn.addEventListener('click', () => {
+                setupPassword(newPassInput.value, confirmPassInput.value);
+            });
+            confirmPassInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') setupBtn.click();
+            });
+
+            // Logout
+            logoutBtn.addEventListener('click', logout);
+
+            // Change password toggle
+            changePassToggleBtn.addEventListener('click', () => {
+                changePassModal.classList.toggle('open');
+                if (changePassModal.classList.contains('open')) {
+                    oldPassInput.focus();
+                }
+            });
+            cancelChangeBtn.addEventListener('click', () => {
+                changePassModal.classList.remove('open');
+                oldPassInput.value = '';
+                newPassInput2.value = '';
+                confirmPassInput2.value = '';
+            });
+            changePassBtn.addEventListener('click', () => {
+                changePassword(oldPassInput.value, newPassInput2.value, confirmPassInput2.value);
+            });
+            confirmPassInput2.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') changePassBtn.click();
+            });
+
+            // Upload events
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    uploadProgress.style.display = 'block';
+                    progressBar.style.width = '0%';
+                    handleUpload(e.target.files);
+                }
+            });
+
+            // Drag & drop
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            uploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    uploadProgress.style.display = 'block';
+                    progressBar.style.width = '0%';
+                    handleUpload(files);
+                }
+            });
+
+            // ─── Init ───
+            (async function init() {
+                try {
+                    await initDB();
+                } catch (err) {
+                    console.error('IndexedDB init error:', err);
+                    showToast('Database error. Please try a different browser.', 'error');
+                }
+
+                if (hasPassword()) {
+                    loginScreen.style.display = 'flex';
+                    dashboard.style.display = 'none';
+                    loginPass.focus();
+                    showSetupBtn.textContent = '🔑 Already have a password? Log in above';
+                    setupArea.classList.add('hidden');
+                } else {
+                    loginScreen.style.display = 'flex';
+                    dashboard.style.display = 'none';
+                    showSetupBtn.textContent = '⚙️ First time? Set up password';
+                    // show setup area by default if no password
+                    setupArea.classList.remove('hidden');
+                    newPassInput.focus();
+                }
+
+                // Check if already logged in via session? We'll keep it simple.
+                // If the user refreshes, they need to log in again.
+            })();
+
+            // ─── Keyboard shortcut: Escape to logout ───
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && isLoggedIn) {
+                    logout();
+                }
+            });
+
+            // ─── Auto-login hint ───
+            console.log('🔒 Private File Database loaded.');
+            console.log('ℹ️  Password is stored locally in your browser (localStorage).');
+            console.log('ℹ️  Files are stored in IndexedDB (private to this browser).');
+
+        })();
+    </script>
+
+</body>
+</html>
